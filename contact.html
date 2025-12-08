@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 10px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 15px;
+      width: 100%;
+      border: none;
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .msg {
+      margin-top: 20px;
+      font-size: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Contact Us</h2>
+
+  <form id="contactForm">
+    <label>Name</label>
+    <input type="text" id="name" required>
+
+    <label>Email</label>
+    <input type="email" id="email" required>
+
+    <label>Message</label>
+    <textarea id="msg" rows="5" required></textarea>
+
+    <button type="submit">Send</button>
+  </form>
+
+  <div class="msg" id="responseMsg"></div>
+
+  <script>
+    const form = document.getElementById("contactForm");
+    const responseMsg = document.getElementById("responseMsg");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      responseMsg.textContent = "Sending...";
+
+      const data = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        msg: document.getElementById("msg").value,
+      };
+
+      try {
+        const res = await fetch("https://weplanfuture.com/api/contact/contact", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        let result;
+
+        const contentType = res.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          result = await res.json();
+        } else {
+          const text = await res.text();
+          throw new Error("Unexpected response: " + text);
+        }
+
+        if (res.ok && result.success) {
+          responseMsg.style.color = "green";
+          responseMsg.textContent = result.message || "Your message has been sent!";
+          form.reset();
+        } else {
+          responseMsg.style.color = "red";
+          responseMsg.textContent = result.message || "Something went wrong.";
+        }
+      } catch (err) {
+        console.error(err);
+        responseMsg.style.color = "red";
+        responseMsg.textContent = "Error: " + err.message;
+      }
+    });
+  </script>
+
+</body>
+</html>
